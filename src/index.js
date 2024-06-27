@@ -3,7 +3,11 @@ import "./pages/index.css";
 // Подключений функций создания, удаления и лайка карточки
 import { createNewCard, removeCard, likeCard } from "./components/card.js";
 // Подключений функций открытия и закрытия попапов
-import { openModal, closeModal } from "./components/modal.js";
+import {
+  openModal,
+  closeModal,
+  closePopupByOverlay,
+} from "./components/modal.js";
 // Подключение массива данных для карточек
 import { initialCards } from "./components/cards.js";
 
@@ -19,11 +23,11 @@ const modalProfile = document.querySelector(".popup_type_edit");
 // Кнопка редактирования профиля
 const profileEditButton = document.querySelector(".profile__edit-button");
 // Форма редактирования профиля
-const formElement = document.forms["edit-profile"];
+const formProfile = document.forms["edit-profile"];
 // Поле "Имя" формы редактирования профиля
-const nameInput = formElement.elements.name;
+const nameInput = formProfile.elements.name;
 // Поле "Должность" формы редактирования профиля
-const jobInput = formElement.elements.description;
+const jobInput = formProfile.elements.description;
 // Форма добавления нового места
 const formNewPlace = document.forms["new-place"];
 // Поле "Место" формы добавления нового места
@@ -45,7 +49,7 @@ const closeModalAddNewPlace = modalAddNewPlace.querySelector(".popup__close");
 
 // Вывод карточек на страницу
 initialCards.forEach(function (item) {
-  const cardItem = createNewCard(item, removeCard, bigImgModal, likeCard);
+  const cardItem = createNewCard(item, removeCard, openBigImgModal, likeCard);
   listOfCards.append(cardItem);
 });
 
@@ -56,15 +60,15 @@ modalAddNewPlaceButton.addEventListener("click", function () {
 
 // Обработчик открытия модального окна профиля
 profileEditButton.addEventListener("click", function () {
+  // Вставляем в поля модального окна профиля текущее значение из шаблона
+  nameInput.value = document.querySelector(".profile__title").textContent;
+  jobInput.value = document.querySelector(".profile__description").textContent;
+  // Открываем модальное окно профиля
   openModal(modalProfile);
 });
 
-// вставляем в поля модального окна профиля текущее значение из шаблона
-nameInput.value = document.querySelector(".profile__title").textContent;
-jobInput.value = document.querySelector(".profile__description").textContent;
-
 // функция редактирования профиля
-function handleFormSubmit(evt) {
+function submitFormProfile(evt) {
   // Скидываем дефолтное поведение для сабмита
   evt.preventDefault();
   // Присваиваем HTML-блоку с информацией о профиле данные из формы
@@ -75,7 +79,7 @@ function handleFormSubmit(evt) {
 }
 
 // Обработчик самбита для редакитрования профиля
-formElement.addEventListener("submit", handleFormSubmit);
+formProfile.addEventListener("submit", submitFormProfile);
 
 // Обработчик формы добавления нового места
 formNewPlace.addEventListener("submit", function (evt) {
@@ -88,7 +92,7 @@ formNewPlace.addEventListener("submit", function (evt) {
   };
   // передаем массив в функцию, а полученные данные добавляем в начало блока карточек благодаря методу prepend
   listOfCards.prepend(
-    createNewCard(newCard, removeCard, bigImgModal, likeCard)
+    createNewCard(newCard, removeCard, openBigImgModal, likeCard)
   );
   // очищаем форму после сохранения полей
   formNewPlace.reset();
@@ -97,7 +101,7 @@ formNewPlace.addEventListener("submit", function (evt) {
 });
 
 // Функция заполнения полей большой картинки данными из функции создания карточки
-function bigImgModal(item) {
+function openBigImgModal(item) {
   // Заполняем переменные данными
   modalImgUrl.src = item.link;
   modalImgUrl.alt = item.name;
@@ -121,32 +125,11 @@ closeModalAddNewPlace.addEventListener("click", function () {
   closeModal(modalAddNewPlace);
 });
 
-// Обработчик закрытия закрытия модальных окон по нажатию Esc
-document.addEventListener("keydown", function (evt) {
-  if (evt.key === "Escape") {
-    closeModal(modalAddNewPlace);
-    closeModal(modalProfile);
-    closeModal(modalImg);
-  }
-});
-
 // Обработчик закрытия модального окна добавления нового места по клику на оверлей
-modalAddNewPlace.addEventListener("click", function (evt) {
-  if (evt.target === evt.currentTarget) {
-    closeModal(modalAddNewPlace);
-  }
-});
+modalAddNewPlace.addEventListener("click", closePopupByOverlay);
 
 // Обработчик закрытия модального окна профиля по клику на оверлей
-modalProfile.addEventListener("click", function (evt) {
-  if (evt.target === evt.currentTarget) {
-    closeModal(modalProfile);
-  }
-});
+modalProfile.addEventListener("click", closePopupByOverlay);
 
 // Обработчик закрытия модального окна большой картинки по клику на оверлей
-modalImg.addEventListener("click", function (evt) {
-  if (evt.target === evt.currentTarget) {
-    closeModal(modalImg);
-  }
-});
+modalImg.addEventListener("click", closePopupByOverlay);

@@ -2,7 +2,7 @@
 const cardTemplate = document.querySelector("#card-template").content;
 
 // Функция создания карточки
-export function createNewCard(item, removeCard, bigImgModal, likeCard) {
+export function createNewCard(item, removeCard, openBigImgModal, likeCard) {
   // Клонирование экземпляра карточки
   const cardItem = cardTemplate.querySelector(".places__item").cloneNode(true);
   // Кнопка удаления карточки
@@ -19,7 +19,7 @@ export function createNewCard(item, removeCard, bigImgModal, likeCard) {
   cardTitle.textContent = item.name;
   // Обработчик открытия большой картинки
   cardImageUrl.addEventListener("click", function () {
-    bigImgModal(item);
+    openBigImgModal(item);
   });
 
   // Обработчик кнопки удаления карточки
@@ -39,7 +39,5 @@ export function removeCard(evt) {
 
 // Функция лайка карточки
 export function likeCard(evt) {
-  if (evt.target.classList.contains("card__like-button")) {
-    evt.target.classList.toggle("card__like-button_is-active");
-  }
+  evt.target.classList.toggle("card__like-button_is-active");
 }
