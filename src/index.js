@@ -137,10 +137,11 @@ formProfile.addEventListener("submit", submitFormProfile);
 
 // Обработчик открытия модального окна редактирования аватара
 avatarButton.addEventListener("click", function () {
-  //Вставляем в поле текущую ссылку на аватарку
-  avatarUrlInput.value = document
-    .querySelector(".profile__image")
-    .style["background-image"].slice(5, -2);
+  //Вставляем в поле текущую ссылку на аватарку по аналогии с данными профиля
+  //Не уверен, что это нужно, поэтому закоментировал)
+  // avatarUrlInput.value = document
+  //   .querySelector(".profile__image")
+  //   .style["background-image"].slice(5, -2);
   //Очистка валидации
   clearValidation(formAvatar, validationConfig);
   //Открываем модальное окно
