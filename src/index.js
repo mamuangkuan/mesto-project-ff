@@ -14,8 +14,8 @@ import {
 // Подключений функций создания, удаления и лайка карточки
 import {
   enableValidation,
-  validationConfig,
   clearValidation,
+  validationConfig
 } from "./components/validation.js";
 // Подключений функций открытия и закрытия попапов
 import {
@@ -49,8 +49,6 @@ const modalAvatarEdit = document.querySelector(".popup_type_avatar");
 const formAvatar = document.forms["avatar-edit"];
 //Поле "Адрес картинки" формы редактирования аватара
 const avatarUrlInput = formAvatar.elements.avatarlink;
-//Иконка закрытия модального окна редактирования аватара
-const closeModalAvatarEdit = modalAvatarEdit.querySelector(".popup__close");
 //Форма добавления нового места
 const formNewPlace = document.forms["new-place"];
 //Поле "Место" формы добавления нового места
@@ -63,20 +61,19 @@ const modalImg = document.querySelector(".popup_type_image");
 const modalImgUrl = modalImg.querySelector(".popup__image");
 //Подпись под картинкой модального окна большой картинки
 const modalImgTitle = modalImg.querySelector(".popup__caption");
-//Иконка закрытия большой картинки
-const closeModalImg = modalImg.querySelector(".popup__close");
-//Иконка закрытия модального окна профиля
-const closeModalProfile = modalProfile.querySelector(".popup__close");
-//Иконка закрытия модального окна добавления нового места
-const closeModalAddNewPlace = modalAddNewPlace.querySelector(".popup__close");
+//Имя профиля
+const profileName = document.querySelector(".profile__title");
+//Описание или "должность" профиля
+const profileDescription = document.querySelector(".profile__description");
+//Все попапы на странице
+const allModals = document.querySelectorAll(".popup");
 
 //Запрашиваем с сервера данные профиля и список карточек
 Promise.all([getProfileData(), getInitialCards()])
   .then(([profileData, initialCards]) => {
     //заполняем профиль данными с сервера
-    document.querySelector(".profile__title").textContent = profileData.name;
-    document.querySelector(".profile__description").textContent =
-      profileData.about;
+    profileName.textContent = profileData.name;
+    profileDescription.textContent = profileData.about;
     document.querySelector(".profile__image").style[
       "background-image"
     ] = `url(${profileData.avatar})`;
@@ -94,15 +91,15 @@ Promise.all([getProfileData(), getInitialCards()])
       );
     });
   })
-  .catch((err) => {
-    console.log(err);
+  .catch((error) => {
+    console.log(`${error} ответил нам сервер и отказался что-либо делать`);
   });
 
 //Обработчик открытия модального окна профиля
 profileEditButton.addEventListener("click", function () {
   //Вставляем в поля модального окна профиля текущее значение из шаблона
-  nameInput.value = document.querySelector(".profile__title").textContent;
-  jobInput.value = document.querySelector(".profile__description").textContent;
+  nameInput.value = profileName.textContent;
+  jobInput.value = profileDescription.textContent;
   //Очистка валидации
   clearValidation(formProfile, validationConfig);
   //Открываем модальное окно профиля
@@ -113,9 +110,6 @@ profileEditButton.addEventListener("click", function () {
 function submitFormProfile(evt) {
   //Скидываем дефолтное поведение для сабмита
   evt.preventDefault();
-  //Присваиваем HTML-блоку с информацией о профиле данные из формы
-  document.querySelector(".profile__title").textContent = nameInput.value;
-  document.querySelector(".profile__description").textContent = jobInput.value;
   //Формируем массив для передачи функции обновления профиля
   const newProfileData = {
     name: nameInput.value,
@@ -125,11 +119,20 @@ function submitFormProfile(evt) {
   const submitButton = evt.submitter;
   showLoading(true, submitButton);
   //Обновляем данные на сервере
-  updateProfile(newProfileData).finally(() => {
-    showLoading(false, submitButton);
-  });
-  //Закрываем окно
-  closeModal(modalProfile);
+  updateProfile(newProfileData)
+    .then(() => {
+      //Присваиваем HTML-блоку с информацией о профиле данные из формы
+      profileName.textContent = nameInput.value;
+      profileDescription.textContent = jobInput.value;
+      //Закрываем окно
+      closeModal(modalProfile);
+    })
+    .catch((error) => {
+      console.log(`${error} ответил нам сервер и отказался что-либо делать`);
+    })
+    .finally(() => {
+      showLoading(false, submitButton);
+    });
 }
 
 // Обработчик самбита для редакитрования профиля
@@ -137,11 +140,6 @@ formProfile.addEventListener("submit", submitFormProfile);
 
 // Обработчик открытия модального окна редактирования аватара
 avatarButton.addEventListener("click", function () {
-  //Вставляем в поле текущую ссылку на аватарку по аналогии с данными профиля
-  //Не уверен, что это нужно, поэтому закоментировал)
-  // avatarUrlInput.value = document
-  //   .querySelector(".profile__image")
-  //   .style["background-image"].slice(5, -2);
   //Очистка валидации
   clearValidation(formAvatar, validationConfig);
   //Открываем модальное окно
@@ -152,21 +150,25 @@ avatarButton.addEventListener("click", function () {
 function submitNewAvatar(evt) {
   //Скидываем дефолтное поведение для сабмита
   evt.preventDefault();
-  //Добавляем аватарку в шаблон значеним из формы
-  document.querySelector(".profile__image").style[
-    "background-image"
-  ] = `url(${avatarUrlInput.value})`;
   //Присваиваем переменной  адрес новой аватарки и передаем в функцию
   const newAvatarImg = { avatar: avatarUrlInput.value };
   //Показываем загрузку
   const submitButton = evt.submitter;
   showLoading(true, submitButton);
   //Обновляем картинку аватарки на сервере
-  updateAvatar(newAvatarImg).finally(() => {
-    showLoading(false, submitButton);
-  });
-  //Закрываем окно
-  closeModal(modalAvatarEdit);
+  updateAvatar(newAvatarImg)
+    .then(() => {
+      //Добавляем аватарку в шаблон значеним из формы
+      avatarButton.style["background-image"] = `url(${avatarUrlInput.value})`;
+      //Закрываем окно
+      closeModal(modalAvatarEdit);
+    })
+    .catch((error) => {
+      console.log(`${error} ответил нам сервер и отказался что-либо делать`);
+    })
+    .finally(() => {
+      showLoading(false, submitButton);
+    });
 }
 
 //Обработчик самбита обновления аватарки
@@ -205,14 +207,17 @@ formNewPlace.addEventListener("submit", function (evt) {
           deleteCardFromServer
         )
       );
+      //Очищаем форму после сохранения полей
+      formNewPlace.reset();
+      // закрываем модальное окно после сохранения
+      closeModal(modalAddNewPlace);
+    })
+    .catch((error) => {
+      console.log(`${error} ответил нам сервер и отказался что-либо делать`);
     })
     .finally(() => {
       showLoading(false, submitButton);
     });
-  //Очищаем форму после сохранения полей
-  formNewPlace.reset();
-  // закрываем модальное окно после сохранения
-  closeModal(modalAddNewPlace);
 });
 
 //Функция заполнения полей большой картинки данными из функции создания карточки
@@ -225,28 +230,16 @@ function openBigImgModal(item) {
   openModal(modalImg);
 }
 
-//Обработчик закрытия большой картинки нажатием на крестик
-closeModalImg.addEventListener("click", function () {
-  //Закрыавем окно
-  closeModal(modalImg);
-});
-
-//Обработчик закрытия модального окно профиля нажатием на крестик
-closeModalProfile.addEventListener("click", function () {
-  //Закрыавем окно
-  closeModal(modalProfile);
-});
-
-//Обработчик закрытия окна редактирования аватара нажатием на крестик
-closeModalAvatarEdit.addEventListener("click", function () {
-  //Закрыавем окно
-  closeModal(modalAvatarEdit);
-});
-
-//Обработчик закрытия модального окна добавления нового места нажатием на крестик
-closeModalAddNewPlace.addEventListener("click", function () {
-  //Закрыавем окно
-  closeModal(modalAddNewPlace);
+//Закрытие всех попаов кликом на крестик
+allModals.forEach((modalWindow) => {
+  modalWindow.addEventListener("mousedown", (evt) => {
+    if (evt.target.classList.contains("popup_is-opened")) {
+      closeModal(modalWindow);
+    }
+    if (evt.target.classList.contains("popup__close")) {
+      closeModal(modalWindow);
+    }
+  });
 });
 
 //Обработчик закрытия модального окна добавления нового места по клику на оверлей
@@ -266,7 +259,7 @@ enableValidation(validationConfig);
 
 //Функция отображения статуса сохранения на кнопках
 function showLoading(isLoading, submitButton) {
-  if (isLoading) {
+  if (isLoading === true) {
     submitButton.textContent = "Сохранение...";
   } else {
     submitButton.textContent = "Сохранить";

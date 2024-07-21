@@ -32,21 +32,28 @@ export function createNewCard(
   });
   //Обработчик кнопки удаления карточки
   removeButton.addEventListener("click", function (evt) {
-    //Удаляем карточку из DOM-дерева
-    removeCard(evt);
     //Удаяем карточку с сервера
-    deleteCardFromServer(item._id);
+    deleteCardFromServer(item._id)
+      .then(() => {
+        //Удаляем карточку из DOM-дерева
+        removeCard(evt);
+      })
+      .catch((error) => {
+        console.log(`${error} ответил нам сервер и отказался что-либо делать`);
+      });
   });
   //Обработчик кнопки лайка
   likeButton.addEventListener("click", function (evt) {
     likeCard(evt, item, cardItem);
   });
-  //Счетчик лайков
-  cardItem.querySelector(".like__counter").textContent = item.likes.length;
+
   //Выделяем лайкнутые карточки
   if (item.likes.some((like) => like._id === profileData._id)) {
     likeButton.classList.toggle("card__like-button_is-active");
   }
+  //Счетчик лайков
+  cardItem.querySelector(".like__counter").textContent = item.likes.length;
+
   //Скрытие корзины для чужих карточек
   if (!(profileData._id === item.owner._id)) {
     removeButton.style = ["display:none"];
@@ -63,14 +70,22 @@ export function removeCard(evt) {
 //Функция лайка карточки
 export function likeCard(evt, item, cardItem) {
   if (evt.target.classList.contains("card__like-button_is-active")) {
-    removeLike(item._id).then((res) => {
-      evt.target.classList.remove("card__like-button_is-active");
-      cardItem.querySelector(".like__counter").textContent = res.likes.length;
-    });
+    removeLike(item._id)
+      .then((res) => {
+        evt.target.classList.remove("card__like-button_is-active");
+        cardItem.querySelector(".like__counter").textContent = res.likes.length;
+      })
+      .catch((error) => {
+        console.log(`${error} ответил нам сервер и отказался что-либо делать`);
+      });
   } else {
-    putLike(item._id).then((res) => {
-      evt.target.classList.add("card__like-button_is-active");
-      cardItem.querySelector(".like__counter").textContent = res.likes.length;
-    });
+    putLike(item._id)
+      .then((res) => {
+        evt.target.classList.add("card__like-button_is-active");
+        cardItem.querySelector(".like__counter").textContent = res.likes.length;
+      })
+      .catch((error) => {
+        console.log(`${error} ответил нам сервер и отказался что-либо делать`);
+      });
   }
 }
