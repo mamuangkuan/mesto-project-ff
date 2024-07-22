@@ -87,7 +87,7 @@ Promise.all([getProfileData(), getInitialCards()])
           likeCard,
           profileData,
           deleteCardFromServer
-        )
+        )        
       );
     });
   })
@@ -230,7 +230,7 @@ function openBigImgModal(item) {
   openModal(modalImg);
 }
 
-//Закрытие всех попаов кликом на крестик
+//Закрытие всех попаов кликом на крестик или по оверлею
 allModals.forEach((modalWindow) => {
   modalWindow.addEventListener("mousedown", (evt) => {
     if (evt.target.classList.contains("popup_is-opened")) {
@@ -241,18 +241,6 @@ allModals.forEach((modalWindow) => {
     }
   });
 });
-
-//Обработчик закрытия модального окна добавления нового места по клику на оверлей
-modalAddNewPlace.addEventListener("click", closePopupByOverlay);
-
-//Обработчик закрытия модального окна профиля по клику на оверлей
-modalProfile.addEventListener("click", closePopupByOverlay);
-
-//Обработчик закрытия модального окна большой картинки по клику на оверлей
-modalImg.addEventListener("click", closePopupByOverlay);
-
-//Обработчик закрытия модального окна редактирования аватара по клику на оверлей
-modalAvatarEdit.addEventListener("click", closePopupByOverlay);
 
 //Активируем функции валидации полей форм
 enableValidation(validationConfig);
